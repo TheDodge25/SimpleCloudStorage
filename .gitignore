@@ -1,0 +1,33 @@
+# === Node / SvelteKit ===
+node_modules/
+.svelte-kit/
+build/
+.output/
+dist/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+dist/
+*.egg-info/
+
+# === Environment secrets — NEVER commit ===
+.env
+
+# === Docker ===
+*.log
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
