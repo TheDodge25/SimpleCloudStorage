@@ -1,0 +1,12 @@
+# Normalize all text files to LF in the repo, checked out as-is on all platforms
+* text=auto eol=lf
+
+# Force these to always be LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Treat these as binary — never touch line endings
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
