@@ -1,4 +1,3 @@
-import re
 import uuid
 from datetime import datetime, timezone
 from bson import ObjectId
@@ -77,3 +76,33 @@ async def upload_file(
     result = await db.files.insert_one(doc)
     doc["_id"] = result.inserted_id
     return doc_to_file_response(doc)
+
+
+@router.get("/{file_id}/download")
+async def download_file(file_id: str):
+    db = get_db()
+    storage = get_storage()
+
+    doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    if not doc:
+        raise HTTPException(404, "File not found")
+
+    response = storage.get_object(settings.minio_bucket_name, doc["minio_object_name"])
+    return StreamingResponse(
+        response.stream(32 * 1024),
+        media_type=doc["content_type"],
+        headers={"Content-Disposition": f'attachment; filename="{doc["original_name"]}"'},
+    )
+
+
+@router.delete("/{file_id}", status_code=204)
+async def delete_file(file_id: str):
+    db = get_db()
+    storage = get_storage()
+
+    doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    if not doc:
+        raise HTTPException(404, "File not found")
+
+    storage.remove_object(settings.minio_bucket_name, doc["minio_object_name"])
+    await db.files.delete_one({"_id": ObjectId(file_id)})
