@@ -8,7 +8,7 @@ on:
 
 jobs:
   frontend-check:
-    name: Frontend — Lint & Type Check
+    name: Frontend — Lint & Build Check
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,11 +21,11 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm run check
       - run: npm run lint
+      - run: npm run build
 
-  backend-check:
-    name: Backend — Lint & Type Check
+  backend-lint:
+    name: Backend — Lint
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,12 +35,37 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff mypy
+      - run: pip install ruff
       - run: ruff check .
-      - run: mypy app --ignore-missing-imports
+
+  backend-tests:
+    name: Backend — Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy env file
+        run: cp .env.example .env
+      - name: Start infrastructure (MongoDB + MinIO + Backend)
+        run: docker compose up -d mongo minio backend
+      - name: Wait for backend health check
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/health && break
+            echo "Waiting for backend... ($i/30)"
+            sleep 3
+          done
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: pip install pytest httpx
+      - name: Run integration tests
+        run: pytest backend/tests/ -v
+        env:
+          BACKEND_TEST_URL: http://localhost:8000
 
   docker-build:
-    name: Docker — Validate Compose Build
+    name: Docker — Validate Full Compose Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

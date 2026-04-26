@@ -1,68 +1,112 @@
 # Google Drive Clone
 
-A self-hosted, single-user Google Drive clone built with:
+A self-hosted file manager built with **SvelteKit**, **FastAPI**, **MongoDB**, and **MinIO**, orchestrated with Docker Compose.
 
-- **Frontend**: SvelteKit + TailwindCSS v4
-- **Backend**: FastAPI (Python)
-- **Database**: MongoDB (file metadata)
-- **Object Storage**: MinIO (file blobs)
-- **Orchestration**: Docker Compose
+## Stack
 
-Dark-mode UI inspired by Google Drive. Supports nested folder hierarchy, file upload/download, filename search, and permanent delete.
+| Layer | Technology |
+|---|---|
+| Frontend | SvelteKit + TailwindCSS v4 |
+| Backend | FastAPI (Python 3.12) |
+| Database | MongoDB 8 |
+| Storage | MinIO (S3-compatible) |
+| Proxy | nginx |
+| CI | GitHub Actions |
 
 ---
 
 ## Prerequisites
 
-| Tool | Version | Install |
-|---|---|---|
-| Docker Desktop | Latest | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
-| Git | ≥ 2.39 | [git-scm.com](https://git-scm.com/) |
-| Node.js | ≥ 20 | [nodejs.org](https://nodejs.org/) *(frontend dev only)* |
-| Python | ≥ 3.11 | [python.org](https://www.python.org/) *(backend dev only)* |
-
-> **Docker Desktop** is required to run the full stack. Download and install it before running `docker compose up`.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) 24+
+- [Git](https://git-scm.com/)
 
 ---
 
-## Quick Start
+## Quick Start (Docker — recommended)
 
 ```bash
-# 1. Clone
-git clone https://github.com/TheDodge25/gdrive-clone.git
-cd gdrive-clone
+# 1. Clone the repo
+git clone <repo-url> && cd fullstack-test
 
-# 2. Copy env file (do not commit .env)
+# 2. Create your .env file
 cp .env.example .env
 
-# 3. Start all services
+# 3. Build and start all services
 docker compose up --build
 
-# 4. Open the app
-#    Frontend  → http://localhost:3000
-#    API docs  → http://localhost:8000/docs
-#    MinIO UI  → http://localhost:9001  (user: minioadmin / minioadmin)
+# 4. Open in browser
+open http://localhost
+```
+
+The app will be available at **http://localhost** (port 80).
+
+### Service URLs (while running)
+
+| Service | URL |
+|---|---|
+| App | http://localhost |
+| API docs (Swagger) | http://localhost:8000/docs |
+| MinIO console | http://localhost:9001 (admin / minioadmin) |
+
+---
+
+## Local Development (without Docker)
+
+Run MongoDB and MinIO in Docker, everything else natively.
+
+```bash
+# Start only the infrastructure containers
+docker compose up -d mongo minio
+
+# Backend
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+# → http://localhost:8000
+
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
+# → http://localhost:5173  (Vite proxy forwards /api/* to :8000)
 ```
 
 ---
 
-## Architecture
+## Running Tests
 
-```
-Browser
-  │
-  ▼
-SvelteKit (port 3000)
-  │  REST API (fetch)
-  ▼
-FastAPI (port 8000)
-  │              │
-  ▼              ▼
-MongoDB        MinIO
-(port 27017)   (port 9000 API / 9001 Console)
+The integration tests run against a live backend. Start the backend first.
 
-All services orchestrated by Docker Compose.
+```bash
+# Ensure backend is running (see Local Development above)
+
+cd backend
+pip install -r requirements.txt
+pytest tests/ -v
 ```
+
+To run against a Docker deployment:
+
+```bash
+BACKEND_TEST_URL=http://localhost:8000 pytest tests/ -v
+```
+
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and adjust as needed.
+
+| Variable | Default | Description |
+|---|---|---|
+| `MINIO_ROOT_USER` | `minioadmin` | MinIO admin username |
+| `MINIO_ROOT_PASSWORD` | `minioadmin` | MinIO admin password |
+| `MINIO_BUCKET_NAME` | `drive-files` | Bucket for uploaded files |
+| `MINIO_ENDPOINT` | `minio:9000` | MinIO host (internal Docker) |
+| `MONGO_URL` | `mongodb://mongo:27017` | MongoDB connection string |
+| `MONGO_DB_NAME` | `drivedb` | Database name |
+| `BACKEND_URL` | `http://backend:8000` | FastAPI host (used by SvelteKit SSR) |
+| `BACKEND_CORS_ORIGINS` | `http://localhost,...` | Allowed CORS origins |
 
 ---
 
@@ -70,49 +114,27 @@ All services orchestrated by Docker Compose.
 
 ```
 fullstack-test/
-├── frontend/          # SvelteKit app
-├── backend/           # FastAPI app
-├── docker-compose.yml
+├── backend/              FastAPI application
+│   ├── app/
+│   │   ├── config.py     Pydantic settings
+│   │   ├── database.py   Motor (MongoDB) client
+│   │   ├── storage.py    MinIO client
+│   │   ├── models/       Pydantic models
+│   │   └── routes/       API route handlers
+│   ├── tests/            pytest integration tests
+│   └── Dockerfile
+├── frontend/             SvelteKit application
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── api.js          Browser-side API client
+│   │   │   ├── server/api.js   Server-side API client (SSR)
+│   │   │   ├── stores.js       Svelte stores
+│   │   │   └── components/     UI components
+│   │   └── routes/             SvelteKit pages
+│   └── Dockerfile
+├── nginx/                Reverse proxy
+│   ├── nginx.conf
+│   └── Dockerfile
 ├── .env.example
-├── .gitignore
-└── README.md
+└── docker-compose.yml
 ```
-
----
-
-## Development (without Docker)
-
-**Backend:**
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-> You'll still need MongoDB and MinIO running (via Docker or locally) for the backend to function.
-
----
-
-## Branch Strategy
-
-| Branch | Purpose |
-|---|---|
-| `main` | Stable, tagged releases |
-| `develop` | Active development |
-| `feat/*` | Feature branches → merge to develop |
-| `fix/*` | Bug fix branches → merge to develop |
-
----
-
-## License
-
-MIT
