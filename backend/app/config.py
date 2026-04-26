@@ -17,7 +17,10 @@ class Settings(BaseSettings):
     backend_cors_origins: list[str] = ["http://localhost:3000"]
     max_upload_size_bytes: int = 2 * 1024 * 1024 * 1024  # 2 GB
 
-    model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=("../.env", "../.env.local", ".env"),
+        extra="ignore",
+    )
 
 
 

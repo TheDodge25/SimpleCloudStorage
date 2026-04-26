@@ -17,6 +17,7 @@ dist/
 
 # === Environment secrets — NEVER commit ===
 .env
+.env.local
 
 # === Docker ===
 *.log
