@@ -77,9 +77,16 @@
     - Convention: <type>(<scope>): <description>
       Types: feat | fix | chore | docs | refactor | test | ci
 
-  Current commits on develop:
-    15d30d7  chore: add .gitattributes to enforce LF line endings
-    70922e7  chore(scaffold): init repo structure, docker-compose, dockerfiles, ci, readme
+  Branch state (as of 2026-04-27):
+    main      →  v1.0.0 tag  (3 bugfix commits behind develop, needs merge)
+    develop   →  active, all 4 phases complete + test verification fixes
+    feat/frontend-ui  →  merged, kept
+    feat/phase4-ci    →  merged, kept
+
+  Post-Phase-4 bugfixes committed on develop (not yet in main):
+    - fix(backend): load .env from project root for local dev outside Docker
+    - fix: use JSON array format for BACKEND_CORS_ORIGINS in .env.example
+    - test: add pytest.ini config and tests package init
 
 --------------------------------------------------------------------------------
   PROJECT STRUCTURE
@@ -198,7 +205,23 @@
   [✅] PHASE 1 — Repo Scaffold & Docker Compose   COMPLETE
   [✅] PHASE 2 — Backend (FastAPI)                 COMPLETE
   [✅] PHASE 3 — Frontend (SvelteKit + Tailwind)   COMPLETE
-  [▶] PHASE 4 — Polish & CI                       NEXT
+  [✅] PHASE 4 — Polish & CI                       COMPLETE  →  main tagged v1.0.0
+
+  Tests verified (2026-04-27): 26/26 passed in 3.21s
+    test_files.py   10 tests (upload, list, download, delete)
+    test_folders.py 10 tests (create, list, breadcrumb, delete)
+    test_search.py   6 tests (basic, case-insensitive, empty, 422, scoped)
+
+  MISSING / OUTSTANDING:
+    1. main is 3 bugfix commits behind develop — needs merge
+    2. Phase 4 commit timestamps not yet backdated
+    3. Frontend never tested visually in browser (Docker full-stack)
+    4. No frontend tests (Playwright / unit) — deferred
+
+  NEXT:
+    → Backdate Phase 4 commits (user to specify date range)
+    → Merge bugfixes into main, re-tag if appropriate
+    → Full-stack smoke test: docker compose up --build
 
   Phase 2 task order (one commit each, ≤70 lines):
     1. requirements.txt
