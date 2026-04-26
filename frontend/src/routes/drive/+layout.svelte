@@ -1,4 +1,5 @@
 <script>
+	import { setContext } from 'svelte';
 	import { uploadFile, createFolder, deleteFile, deleteFolder, search } from '$lib/api.js';
 	import { addToast, clearSelection } from '$lib/stores.js';
 	import Topbar from '$lib/components/Topbar.svelte';
@@ -62,6 +63,8 @@
 		await invalidateAll();
 		addToast('success', 'Deleted');
 	}
+
+	setContext('drive', { handleFiles });
 </script>
 
 <input bind:this={fileInput} type="file" multiple hidden onchange={(e) => handleFiles(e.target.files, folderId)} />
