@@ -1,4 +1,4 @@
-import { listFiles, listFolders, getBreadcrumb } from '$lib/api.js';
+import { listFiles, listFolders, getBreadcrumb } from '$lib/server/api.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
