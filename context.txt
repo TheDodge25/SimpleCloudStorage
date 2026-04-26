@@ -198,7 +198,7 @@
   [✅] PHASE 1 — Repo Scaffold & Docker Compose   COMPLETE
   [✅] PHASE 2 — Backend (FastAPI)                 COMPLETE
   [✅] PHASE 3 — Frontend (SvelteKit + Tailwind)   COMPLETE
-  [▶] PHASE 4 — Polish & CI                       NEXT
+  [✅] PHASE 4 — Polish & CI                       COMPLETE  →  main tagged v1.0.0
 
   Phase 2 task order (one commit each, ≤70 lines):
     1. requirements.txt
