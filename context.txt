@@ -78,15 +78,10 @@
       Types: feat | fix | chore | docs | refactor | test | ci
 
   Branch state (as of 2026-04-27):
-    main      →  v1.0.0 tag  (3 bugfix commits behind develop, needs merge)
-    develop   →  active, all 4 phases complete + test verification fixes
+    main      →  v1.0.0 tag  (✅ in sync with develop)
+    develop   →  active (current)
     feat/frontend-ui  →  merged, kept
     feat/phase4-ci    →  merged, kept
-
-  Post-Phase-4 bugfixes committed on develop (not yet in main):
-    - fix(backend): load .env from project root for local dev outside Docker
-    - fix: use JSON array format for BACKEND_CORS_ORIGINS in .env.example
-    - test: add pytest.ini config and tests package init
 
 --------------------------------------------------------------------------------
   PROJECT STRUCTURE
@@ -213,15 +208,12 @@
     test_search.py   6 tests (basic, case-insensitive, empty, 422, scoped)
 
   MISSING / OUTSTANDING:
-    1. main is 3 bugfix commits behind develop — needs merge
-    2. Phase 4 commit timestamps not yet backdated
-    3. Frontend never tested visually in browser (Docker full-stack)
-    4. No frontend tests (Playwright / unit) — deferred
+    1. Frontend never tested visually in browser (Docker full-stack) — user to do
+    2. No frontend tests (Playwright / unit) — deferred to future
 
   NEXT:
-    → Backdate Phase 4 commits (user to specify date range)
-    → Merge bugfixes into main, re-tag if appropriate
-    → Full-stack smoke test: docker compose up --build
+    → User: docker compose up --build → open http://localhost
+    → Future phases — see future-features.md
 
   Phase 2 task order (one commit each, ≤70 lines):
     1. requirements.txt
