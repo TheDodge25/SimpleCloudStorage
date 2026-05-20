@@ -1,4 +1,4 @@
-# Google Drive Clone
+# Simple cloud storage
 
 A self-hosted file manager built with **SvelteKit**, **FastAPI**, **MongoDB**, and **MinIO**, orchestrated with Docker Compose.
 
@@ -9,7 +9,7 @@ A self-hosted file manager built with **SvelteKit**, **FastAPI**, **MongoDB**, a
 | Frontend | SvelteKit + TailwindCSS v4 |
 | Backend | FastAPI (Python 3.12) |
 | Database | MongoDB 8 |
-| Storage | MinIO (S3-compatible) |
+| Storage | MinIO |
 | Proxy | nginx |
 | CI | GitHub Actions |
 
@@ -22,11 +22,11 @@ A self-hosted file manager built with **SvelteKit**, **FastAPI**, **MongoDB**, a
 
 ---
 
-## Quick Start (Docker — recommended)
+## Quick start (Docker — recommended)
 
 ```bash
 # 1. Clone the repo
-git clone <repo-url> && cd fullstack-test
+git clone https://github.com/TheDodge25/SimpleCloudStorage && cd SimpleCloudStorage
 
 # 2. Create your .env file
 cp .env.example .env
@@ -50,7 +50,7 @@ The app will be available at **http://localhost** (port 80).
 
 ---
 
-## Local Development (without Docker)
+## Local development (without Docker)
 
 Run MongoDB and MinIO in Docker, everything else natively.
 
@@ -73,12 +73,12 @@ npm run dev
 
 ---
 
-## Running Tests
+## Running tests
 
 The integration tests run against a live backend. Start the backend first.
 
 ```bash
-# Ensure backend is running (see Local Development above)
+# Make sure backend is running (see Local Development above)
 
 cd backend
 pip install -r requirements.txt
@@ -93,7 +93,7 @@ BACKEND_TEST_URL=http://localhost:8000 pytest tests/ -v
 
 ---
 
-## Environment Variables
+## Environment variables
 
 Copy `.env.example` to `.env` and adjust as needed.
 
@@ -110,10 +110,10 @@ Copy `.env.example` to `.env` and adjust as needed.
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
-fullstack-test/
+SimpleCloudStorage/
 ├── backend/              FastAPI application
 │   ├── app/
 │   │   ├── config.py     Pydantic settings
@@ -138,3 +138,8 @@ fullstack-test/
 ├── .env.example
 └── docker-compose.yml
 ```
+
+## Main page appearance
+<img width="1919" height="993" alt="изображение" src="https://github.com/user-attachments/assets/d44d0e16-fac9-4bb3-afa9-e5f006017fb0" />
+
+
