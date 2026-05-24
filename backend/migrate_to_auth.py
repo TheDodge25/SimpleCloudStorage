@@ -26,14 +26,11 @@ from datetime import datetime, timezone
 
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
-from passlib.context import CryptContext
 
 # ── Config (mirrors app/config.py but standalone so the script works outside Docker) ──
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "drivedb")
 DEFAULT_QUOTA_BYTES = int(os.getenv("DEFAULT_QUOTA_BYTES", str(10 * 1024 * 1024 * 1024)))
-
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def migrate(username: str, email: str, password: str) -> None:
@@ -46,10 +43,11 @@ async def migrate(username: str, email: str, password: str) -> None:
         admin_id = existing["_id"]
         print(f"[migrate] User '{username}' already exists — skipping creation.")
     else:
+        from app.auth import hash_password
         doc = {
             "username": username,
             "email": email,
-            "hashed_password": _pwd_context.hash(password),
+            "hashed_password": hash_password(password),
             "role": "admin",
             "created_at": datetime.now(timezone.utc),
             "quota_bytes": DEFAULT_QUOTA_BYTES,

@@ -2,18 +2,18 @@
 auth.py — centralised authentication helpers and FastAPI dependencies.
 
 Provides:
-  - Password hashing / verification (bcrypt via passlib)
+  - Password hashing / verification (bcrypt)
   - JWT access + refresh token creation and decoding (python-jose)
   - get_current_user   dependency → injects the current UserDocument
   - require_admin      dependency → same but raises 403 if not admin
 """
 
 import uuid
+import bcrypt
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Cookie, Depends, HTTPException, status
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.config import settings
 from app.database import get_db
@@ -21,15 +21,16 @@ from app.models.user import TokenPayload, UserResponse, doc_to_user_response
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except ValueError:
+        return False
 
 
-def hash_password(plain: str) -> str:
-    return _pwd_context.hash(plain)
-
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_context.verify(plain, hashed)
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 
 # ── JWT helpers ───────────────────────────────────────────────────────────────
