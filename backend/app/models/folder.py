@@ -13,6 +13,7 @@ class FolderResponse(BaseModel):
     parent_id: str | None = None
     created_date: datetime
     path: str
+    owner_id: str
 
 
 def doc_to_folder_response(doc: dict) -> FolderResponse:
@@ -22,4 +23,5 @@ def doc_to_folder_response(doc: dict) -> FolderResponse:
         parent_id=str(doc["parent_id"]) if doc.get("parent_id") else None,
         created_date=doc["created_date"],
         path=doc["path"],
+        owner_id=str(doc["owner_id"]),
     )
