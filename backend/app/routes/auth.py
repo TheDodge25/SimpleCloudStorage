@@ -78,9 +78,8 @@ async def login(body: LoginRequest, response: Response):
     refresh_token, jti = create_refresh_token(user_id, doc["role"])
 
     # Store hashed jti for revocation support
-    from passlib.context import CryptContext
-    _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    jti_hash = _ctx.hash(jti)
+    from app.auth import hash_password
+    jti_hash = hash_password(jti)
     await db.users.update_one(
         {"_id": doc["_id"]},
         {
@@ -108,17 +107,17 @@ async def refresh(response: Response, refresh_token: str | None = Cookie(default
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     # Verify jti is in the stored hash list (token hasn't been revoked)
-    from passlib.context import CryptContext
-    _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    valid = any(_ctx.verify(payload.jti, h) for h in doc.get("refresh_token_hashes", []))
+    from app.auth import verify_password
+    valid = any(verify_password(payload.jti, h) for h in doc.get("refresh_token_hashes", []))
     if not valid:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token revoked")
 
     # Rotate: remove old jti hash, issue new token pair
-    old_hashes = [h for h in doc.get("refresh_token_hashes", []) if not _ctx.verify(payload.jti, h)]
+    old_hashes = [h for h in doc.get("refresh_token_hashes", []) if not verify_password(payload.jti, h)]
     new_access = create_access_token(payload.sub, doc["role"])
     new_refresh, new_jti = create_refresh_token(payload.sub, doc["role"])
-    new_hash = _ctx.hash(new_jti)
+    from app.auth import hash_password
+    new_hash = hash_password(new_jti)
 
     await db.users.update_one(
         {"_id": doc["_id"]},
@@ -138,14 +137,13 @@ async def logout(
     if refresh_token:
         try:
             payload = decode_token(refresh_token)
-            from passlib.context import CryptContext
-            _ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            from app.auth import verify_password
             db = get_db()
             doc = await db.users.find_one({"_id": ObjectId(payload.sub)})
             if doc:
                 remaining = [
                     h for h in doc.get("refresh_token_hashes", [])
-                    if not _ctx.verify(payload.jti, h)
+                    if not verify_password(payload.jti, h)
                 ]
                 await db.users.update_one(
                     {"_id": doc["_id"]},
