@@ -29,8 +29,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    # Port 8000 is NOT exposed to the host — all traffic goes through nginx on port 80.
+    # Uncomment the line below temporarily if you need direct backend access for debugging.
+    # ports:
+    #   - "8000:8000"
     env_file:
       - .env
     depends_on:
@@ -48,8 +50,10 @@ services:
 
   mongo:
     image: mongo:8
-    ports:
-      - "27017:27017"
+    # Port 27017 is NOT exposed to the host — internal network only.
+    # Uncomment for local debugging with MongoDB Compass:
+    # ports:
+    #   - "27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
@@ -63,9 +67,11 @@ services:
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    # Ports 9000 and 9001 are NOT exposed to the host — internal network only.
+    # Uncomment for local debugging with the MinIO console:
+    # ports:
+    #   - "9000:9000"
+    #   - "9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}

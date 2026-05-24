@@ -7,6 +7,11 @@
 		{ href: '/drive?recent=1', icon: Clock, label: 'Recent' },
 		{ href: '/drive?trash=1', icon: Trash2, label: 'Trash' }
 	];
+
+	const user = $derived($page.data.user);
+	const usedGB = $derived((user?.used_bytes / (1024 ** 3)).toFixed(2));
+	const quotaGB = $derived((user?.quota_bytes / (1024 ** 3)).toFixed(2));
+	const percent = $derived(user?.quota_bytes ? Math.min(100, (user.used_bytes / user.quota_bytes) * 100) : 0);
 </script>
 
 <aside class="sidebar">
@@ -24,16 +29,17 @@
 		{/each}
 	</nav>
 
+	{#if user}
 	<div class="storage">
 		<div class="storage-label">
 			<span>Storage</span>
-			<span class="storage-used">— GB used</span>
+			<span class="storage-used">{usedGB} GB of {quotaGB} GB</span>
 		</div>
 		<div class="storage-bar" role="meter" aria-label="Storage usage">
-			<div class="storage-fill" style="width: 0%"></div>
+			<div class="storage-fill" style="width: {percent}%" class:danger={percent > 90}></div>
 		</div>
-		<p class="storage-sub">Storage tracking coming soon</p>
 	</div>
+	{/if}
 </aside>
 
 <style>
@@ -74,6 +80,6 @@
 		height: 4px; background: var(--color-border);
 		border-radius: 2px; overflow: hidden;
 	}
-	.storage-fill { height: 100%; background: var(--color-primary); border-radius: 2px; }
-	.storage-sub { font-size: 0.7rem; color: var(--color-text-faint); margin: 0.375rem 0 0; }
+	.storage-fill { height: 100%; background: var(--color-primary); border-radius: 2px; transition: width 0.3s; }
+	.storage-fill.danger { background: #ea4335; }
 </style>

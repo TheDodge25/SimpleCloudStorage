@@ -12,6 +12,7 @@ class FileDocument(BaseModel):
     upload_date: datetime
     minio_object_name: str
     folder_id: str | None = None
+    owner_id: str
 
     model_config = {"populate_by_name": True}
 
@@ -23,6 +24,7 @@ class FileResponse(BaseModel):
     content_type: str
     upload_date: datetime
     folder_id: str | None = None
+    owner_id: str
 
 
 def doc_to_file_response(doc: dict) -> FileResponse:
@@ -33,4 +35,5 @@ def doc_to_file_response(doc: dict) -> FileResponse:
         content_type=doc["content_type"],
         upload_date=doc["upload_date"],
         folder_id=str(doc["folder_id"]) if doc.get("folder_id") else None,
+        owner_id=str(doc["owner_id"]),
     )
